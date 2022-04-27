@@ -4,9 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Car;
+use App\Models\Product;
+use App\Rules\Uppercase;
+use App\Http\Requests\CreateValidationRequest;
 
 class CarsController extends Controller
 {
+    public function __construct(){
+        $this->middleware('auth',['except'=> ['index','show']]);
+    }
     /**
      * Display a listing of the resource.
      *
@@ -51,10 +57,47 @@ class CarsController extends Controller
         //$car->description=$request->input('description');
         //$car->save();
 
+
+
+        // $request->validate([
+        //     'name'=>new Uppercase,
+        //     'founded'=>'required|integer|min:0|max:2022',
+        //     'description'=>'required'
+        // ]);
+
+        //if it is valid it will proceed
+        //if it is not valid, throw validation exception
+
+        //methods we can use on request
+        //guessExtension()
+        //getMimeType
+        //store()
+        //asStore()
+        //storePublicly()
+        //move()
+        //getClientOriginalName()
+
+
+
+
+        $request->validate([
+            'name'=>'required',
+            'founded'=>'required|integer|min:0|max:2022',
+            'description'=>'required',
+            'image'=>'required|mimes:jpg,png,jpeg|max:5048',
+
+        ]);
+
+        $newImageName=time().'-'.$request->name.'.'.$request->image->extension();
+
+        $request->image->move(public_path('images'),$newImageName);
+
         $car=Car::create([
             'name'=>$request->input('name'),
             'founded' => $request->input('founded'),
-            'description'=>$request->input('description')
+            'description'=>$request->input('description'),
+            'image_path'=> $newImageName,
+            'user_id'=>auth()->user()->id
         ]);
 
          return redirect('/vehicle');
@@ -99,8 +142,10 @@ class CarsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(CreateValidationRequest $request, $id)
     {
+
+        $request->validated();
         //
         $car=Car::where('id',$id)->update([
             'name'=>$request->input('name'),

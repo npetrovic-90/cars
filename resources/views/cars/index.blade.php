@@ -9,17 +9,25 @@
         </h1>
     </div>
 
+    @if(Auth::user())
     <div class="pt-10">
         <a class="border-b-2 pb-2 border-dotted italic text-gray-500" href="vehicle/create">
             Add a new car &rarr;
         </a>
 
     </div>
+    @else
+    <p class="py-12 italic">
+        Please login to add a new car!
+    </p>
+    @endif
 
 
     <div class="w-5/6 py-10">
         @foreach ($cars as $car )
         <div class="m-auto">
+            @if (isset(Auth::user()->id) && Auth::user()->id==$car->user_id)
+
             <div class="float-right">
                 <a href="vehicle/{{ $car->id }}/edit"
                     class="border-b-2 pb-2 border-dotted italic text-green-500">
@@ -35,6 +43,8 @@
                     </button>
                 </form>
             </div>
+            @endif
+
             <span class="uppercase text-blue-500 font-bold text-xs italic">
                 Founded: {{ $car->founded }}
             </span>
